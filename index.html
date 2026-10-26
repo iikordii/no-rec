@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NO RECORD — Not yet</title>
+<meta name="description" content="NO RECORD. A record label and a night series in Cairo. Coming soon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  --ink:#0a0a0a; --bone:#e8e4dc; --mute:#9a958c; --line:#2b2b2b;
+  --night:#d7261e; --night-text:#ff4a3d;
+  --display:"Archivo Black","Arial Black",Impact,sans-serif;
+  --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#0a0a0a; --bone:#e8e4dc; } }
+:root[data-theme="dark"]{ --ink:#0a0a0a; --bone:#e8e4dc; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;background:var(--ink);color:var(--bone);font-family:var(--mono);overflow:hidden;
+  -webkit-font-smoothing:antialiased;touch-action:none;user-select:none;-webkit-user-select:none}
+.room{position:fixed;inset:0;overflow:hidden;cursor:none}
+@media (hover:none){.room{cursor:auto}}
+
+/* grain */
+#grain{position:absolute;inset:0;width:100%;height:100%;opacity:.045;pointer-events:none;mix-blend-mode:screen;image-rendering:pixelated}
+
+/* the light: a soft warm glow that follows the pointer */
+.glow{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at var(--x,50%) var(--y,40%), rgba(232,228,220,.10) 0, rgba(232,228,220,.04) calc(var(--r,160px)*.8), transparent calc(var(--r,160px)*1.7))}
+
+/* hidden layer: only visible inside the light */
+.hidden{position:absolute;inset:0;pointer-events:none;
+  -webkit-mask-image:radial-gradient(circle at var(--x,50%) var(--y,40%), #000 0, #000 calc(var(--r,160px)*.55), transparent var(--r,160px));
+          mask-image:radial-gradient(circle at var(--x,50%) var(--y,40%), #000 0, #000 calc(var(--r,160px)*.55), transparent var(--r,160px))}
+.big{position:absolute;left:4vw;right:4vw;top:50%;transform:translateY(-52%);margin:0;
+  font-family:var(--display);font-weight:400;font-size:clamp(88px,24vw,420px);line-height:.84;letter-spacing:-.01em;color:#4a4640;text-transform:uppercase}
+.big span{display:block}
+.big span:last-child{text-align:right}
+.whisper{position:absolute;margin:0;font-size:clamp(12px,1.25vw,16px);line-height:1.5;color:var(--bone);max-width:28ch}
+.w1{left:6vw;top:16vh}.w2{right:6vw;top:22vh;text-align:right}.w3{left:8vw;bottom:20vh}.w4{right:8vw;bottom:16vh;text-align:right}
+.w5{left:44vw;top:9vh}
+
+/* corners: camera display */
+.osd{position:absolute;margin:0;font-size:12px;letter-spacing:.14em;color:var(--mute);font-weight:700;text-transform:uppercase;z-index:3}
+.tl{left:max(24px,4vw);top:calc(env(safe-area-inset-top,0px) + 22px);color:var(--bone)}
+.tr{right:max(24px,4vw);top:calc(env(safe-area-inset-top,0px) + 24px);display:flex;align-items:center;gap:10px;color:var(--bone)}
+.bl{left:max(24px,4vw);bottom:calc(env(safe-area-inset-bottom,0px) + 22px)}
+.br{right:max(24px,4vw);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);text-align:right}
+.wordmark{display:block;width:clamp(130px,12vw,190px);height:auto;color:var(--bone)}
+.rec-dot{width:9px;height:9px;border-radius:50%;background:var(--night);animation:blink 1.6s steps(1) infinite}
+.rec-word{text-decoration:line-through;text-decoration-thickness:2px}
+@keyframes blink{50%{opacity:0}}
+
+/* the disc */
+.stage{position:absolute;left:50%;top:50%;width:min(34vmin,300px);aspect-ratio:1;transform:translate(-50%,-56%);z-index:4}
+.disc{all:unset;position:absolute;inset:0;border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.disc:focus-visible{outline:2px solid var(--bone);outline-offset:14px}
+.half{position:absolute;inset:0;width:100%;height:100%;fill:var(--night);transition:transform .9s cubic-bezier(.7,0,.2,1),fill .6s ease}
+.revealed .half.top{transform:translateY(-62vh)}
+.revealed .half.bot{transform:translateY(62vh)}
+.holding .half.top{transform:translateY(-3%)}
+.holding .half.bot{transform:translateY(3%)}
+.ring{position:absolute;inset:-18px;width:calc(100% + 36px);height:calc(100% + 36px);transform:rotate(-90deg);pointer-events:none}
+.ring circle{fill:none;stroke:var(--bone);stroke-width:1.5;stroke-dasharray:var(--len);stroke-dashoffset:var(--len);opacity:.8}
+.hint{position:absolute;left:50%;top:calc(50% + min(34vmin,300px)*.62);transform:translateX(-50%);margin:0;width:max-content;max-width:88vw;
+  text-align:center;font-size:13px;line-height:1.6;color:var(--mute);z-index:4;transition:opacity .5s}
+.hint strong{color:var(--bone);font-weight:700}
+.genre{display:block;margin-top:6px;color:var(--night-text);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px;min-height:1.6em}
+.revealed .hint{opacity:0}
+.hidden,.glow{transition:opacity .6s}
+.revealed .hidden{opacity:0}
+
+/* what you get when you stop the recording */
+.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%);width:min(620px,88vw);z-index:5;opacity:0;visibility:hidden;
+  transition:opacity .6s .45s, transform .9s .35s cubic-bezier(.2,.7,.2,1), visibility 0s 1.2s;text-align:left}
+.revealed .panel{opacity:1;visibility:visible;transform:translate(-50%,-50%);transition:opacity .6s .45s, transform .9s .35s cubic-bezier(.2,.7,.2,1), visibility 0s}
+.panel h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(40px,7vw,84px);line-height:.92;text-transform:uppercase;letter-spacing:.005em}
+.panel h1 em{font-style:normal;color:var(--night-text)}
+.panel p{margin:18px 0 0;font-size:clamp(14px,1.4vw,16px);line-height:1.65;max-width:52ch;color:var(--bone)}
+.panel .facts{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.panel .facts li{display:flex;justify-content:space-between;gap:24px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.panel .facts span:first-child{color:var(--mute)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{font:700 14px/1 var(--mono);letter-spacing:.06em;padding:16px 20px;min-height:48px;border:1px solid var(--bone);background:var(--bone);color:var(--ink);text-decoration:none;cursor:pointer;display:inline-flex;align-items:center}
+.btn.ghost{background:transparent;color:var(--bone)}
+.btn:hover{background:var(--night);border-color:var(--night);color:var(--bone)}
+.btn:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
+.note{margin-top:14px!important;font-size:12px!important;color:var(--mute)!important}
+
+/* custom cursor: a small red point */
+.cursor{position:absolute;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--bone);pointer-events:none;z-index:6;transform:translate(var(--cx,-100px),var(--cy,-100px));opacity:.9}
+@media (hover:none){.cursor{display:none}}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* opening: the room starts dark, the disc arrives */
+.stage{animation:arrive 1.6s cubic-bezier(.2,.7,.2,1) both .3s}
+@keyframes arrive{from{opacity:0;transform:translate(-50%,-56%) scale(.6)}to{opacity:1;transform:translate(-50%,-56%) scale(1)}}
+
+@media (max-width:640px){
+  .w5{display:none}.w2{top:15vh}.w1{top:24vh}
+  .panel .facts li{font-size:12px}
+}
+@media (prefers-reduced-motion: reduce){
+  .stage{animation:none}.rec-dot{animation:none}
+  .half,.panel{transition:opacity .2s, visibility 0s}
+  .revealed .half.top,.revealed .half.bot{opacity:0;transform:none}
+}
+</style>
+</head>
+<body>
+<main class="room" id="room">
+  <canvas id="grain" aria-hidden="true"></canvas>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div class="hidden" aria-hidden="true">
+    <p class="big"><span>Not</span><span>yet.</span></p>
+    <p class="whisper w1">Somewhere in Cairo, something is about to not be recorded.</p>
+    <p class="whisper w2">Your memory is the only copy.</p>
+    <p class="whisper w3">Phones in pockets. Eyes on the floor.</p>
+    <p class="whisper w4">Hold the red dot. You’ll see.</p>
+    <p class="whisper w5">You found the light.</p>
+  </div>
+
+  <h1 class="sr">NO RECORD. A record label and a night series in Cairo. Coming soon.</h1>
+
+  <div class="osd tl">
+    <svg class="wordmark" viewBox="0 0 676.9 68.8" role="img" aria-label="NO RECORD"><path fill="currentColor" d="M56.6 68.8 27.70 35.4V68.8H7.4V0.0H26.70L55.6 33.9V0.0H75.9V68.8ZM249.62 40.0 264.92 68.8H240.12L227.92 43.69H219.72V68.8H197.62V0.0H239.72Q247.12 0.0 252.37 2.84Q257.62 5.69 260.27 10.54Q262.92 15.39 262.92 21.09Q262.92 27.39 259.52 32.49Q256.12 37.59 249.62 40.0ZM234.22 15.69H219.72V28.39H234.22Q236.82 28.39 238.62 26.54Q240.42 24.69 240.42 21.99Q240.42 19.29 238.62 17.49Q236.82 15.69 234.22 15.69ZM279.42 0.0H338.92V16.49H301.52V25.99H333.52V41.8H301.52V52.3H339.62V68.8H279.42ZM421.52 28.29H400.42Q400.42 22.29 397.27 18.79Q394.12 15.29 388.32 15.29Q381.62 15.29 378.47 19.49Q375.32 23.69 375.32 31.19V37.59Q375.32 45.0 378.47 49.25Q381.62 53.5 388.12 53.5Q394.52 53.5 397.82 50.19Q401.12 46.89 401.12 40.89H421.52Q421.52 55.0 412.87 62.5Q404.22 70.0 388.42 70.0Q370.82 70.0 361.77 61.0Q352.72 52.0 352.72 34.4Q352.72 16.79 361.77 7.79Q370.82 -1.20 388.42 -1.20Q403.72 -1.20 412.62 6.44Q421.52 14.09 421.52 28.29ZM508.82 34.4Q508.82 51.8 499.12 60.9Q489.42 70.0 471.62 70.0Q453.82 70.0 444.17 60.94Q434.52 51.89 434.52 34.4Q434.52 16.89 444.17 7.84Q453.82 -1.20 471.62 -1.20Q489.42 -1.20 499.12 7.89Q508.82 16.99 508.82 34.4ZM457.12 31.19V37.59Q457.12 44.89 460.82 49.19Q464.52 53.5 471.62 53.5Q478.72 53.5 482.47 49.19Q486.22 44.89 486.22 37.59V31.19Q486.22 23.89 482.47 19.59Q478.72 15.29 471.62 15.29Q464.52 15.29 460.82 19.59Q457.12 23.89 457.12 31.19ZM576.72 40.0 592.02 68.8H567.22L555.02 43.69H546.82V68.8H524.72V0.0H566.82Q574.22 0.0 579.47 2.84Q584.72 5.69 587.37 10.54Q590.02 15.39 590.02 21.09Q590.02 27.39 586.62 32.49Q583.22 37.59 576.72 40.0ZM561.32 15.69H546.82V28.39H561.32Q563.92 28.39 565.72 26.54Q567.52 24.69 567.52 21.99Q567.52 19.29 565.72 17.49Q563.92 15.69 561.32 15.69ZM672.42 34.4Q672.42 68.8 636.32 68.8H606.52V0.0H636.32Q672.42 0.0 672.42 34.4ZM628.62 52.3H635.92Q649.82 52.3 649.82 37.39V31.4Q649.82 16.49 635.92 16.49H628.62Z"/><path fill="#d7261e" d="M87.45,31.12A36.46,36.46 0 0 1 160.08,31.12ZM160.08,37.68A36.46,36.46 0 0 1 87.45,37.68Z"/></svg>
+  </div>
+  <p class="osd tr" aria-hidden="true"><span class="rec-dot"></span><span class="rec-word">REC</span></p>
+  <p class="osd bl"><span id="tc">00:00:00:00</span><br><span>Nothing recorded</span></p>
+  <p class="osd br">Cairo<br>Coming soon</p>
+
+  <div class="stage" id="stage">
+    <svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle id="ringc" cx="50" cy="50" r="48"/></svg>
+    <button class="disc" id="disc" aria-label="Hold to stop the recording and see what’s coming" aria-describedby="hint">
+      <svg class="half top" viewBox="0 0 200 200" aria-hidden="true"><path d="M0.41,91A100,100 0 0 1 199.59,91Z"/></svg>
+      <svg class="half bot" viewBox="0 0 200 200" aria-hidden="true"><path d="M199.59,109A100,100 0 0 1 0.41,109Z"/></svg>
+    </button>
+  </div>
+  <p class="hint" id="hint"><span id="hintText"><strong>Hold the red dot</strong> to stop the recording.<br>Move your light around.</span><span class="genre" id="genre" aria-live="polite"></span></p>
+
+  <section class="panel" id="panel" aria-labelledby="panelTitle" aria-hidden="true">
+    <h1 id="panelTitle">Recording<br><em>stopped.</em></h1>
+    <p>Good. That’s how it will be all night. NO RECORD is a record label and a night series in Cairo for long sets, low light and people who came to dance, not to film.</p>
+    <ul class="facts">
+      <li><span>First night</span><span>NR001, soon</span></li>
+      <li><span>Sound</span><span>Undefined</span></li>
+      <li><span>Location</span><span>Cairo’s heart</span></li>
+      <li><span>Footage</span><span>None</span></li>
+    </ul>
+    <div class="actions" id="actions"></div>
+    <p class="note" id="actionsNote"></p>
+    <div class="actions"><button class="btn ghost" id="again" type="button">Start recording again</button></div>
+  </section>
+
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
+</main>
+
+<script>
+/* ---- Edit these when your accounts are live ---- */
+const CONFIG = {
+  instagramHandle: '',   // e.g. 'norecord.cairo'  (leave '' until it exists)
+  channelUrl: '',        // your Instagram broadcast channel link
+  listWord: 'ATTENTION'  // the word people DM you
+};
+/* ------------------------------------------------ */
+
+const NIGHTS=[
+  ['#d7261e','#ff4a3d','Techno / minimal'],['#b6ff00','#b6ff00','Acid'],['#ff7a1a','#ff8a33','Hard groove'],
+  ['#2f6bff','#7c9cff','Deep tech / deep house'],['#ff4fd8','#ff6fe0','Funk / disco house'],['#9b6bff','#b08cff','Trance']];
+const root=document.documentElement, room=document.getElementById('room');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const touch=matchMedia('(hover: none)').matches;
+
+/* CTA, only real links */
+(function(){
+  const a=document.getElementById('actions'), n=document.getElementById('actionsNote');
+  if(CONFIG.instagramHandle){
+    const f=document.createElement('a'); f.className='btn'; f.href='https://www.instagram.com/'+CONFIG.instagramHandle+'/'; f.target='_blank'; f.rel='noopener';
+    f.textContent='Follow @'+CONFIG.instagramHandle; a.appendChild(f);
+  } else {
+    n.textContent='';
+  }
+  if(CONFIG.channelUrl){
+    const c=document.createElement('a'); c.className='btn ghost'; c.href=CONFIG.channelUrl; c.target='_blank'; c.rel='noopener'; c.textContent='Join the channel'; a.appendChild(c);
+  }
+  if(!a.children.length) a.remove();
+})();
+if(touch) document.getElementById('hintText').innerHTML='<strong>Hold the red dot</strong> to stop the recording.<br>Drag your finger to find what’s hidden.';
+
+/* grain */
+const g=document.getElementById('grain'), gx=g.getContext('2d');
+function sizeGrain(){ g.width=Math.ceil(innerWidth/3); g.height=Math.ceil(innerHeight/3); }
+function drawGrain(){ const im=gx.createImageData(g.width,g.height), d=im.data;
+  for(let i=0;i<d.length;i+=4){ const v=Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } gx.putImageData(im,0,0); }
+sizeGrain(); drawGrain(); addEventListener('resize',()=>{sizeGrain();drawGrain();});
+if(!reduce) setInterval(drawGrain,90);
+
+/* the light */
+let lx=innerWidth*.5, ly=innerHeight*.42, tx=lx, ty=ly, moved=false, t0=performance.now();
+const radius=()=>Math.max(130,Math.min(innerWidth,innerHeight)*.24);
+function setLight(x,y){ root.style.setProperty('--x',x+'px'); root.style.setProperty('--y',y+'px'); root.style.setProperty('--r',radius()+'px'); }
+const cur=document.getElementById('cursor');
+function onMove(e){ const p=e.touches?e.touches[0]:e; tx=p.clientX; ty=p.clientY; moved=true;
+  cur.style.setProperty('--cx',tx+'px'); cur.style.setProperty('--cy',ty+'px'); }
+addEventListener('pointermove',onMove,{passive:true}); addEventListener('touchmove',onMove,{passive:true});
+function loop(now){
+  if(!moved){ const t=(now-t0)/1000; tx=innerWidth*(.5+.32*Math.sin(t*.45)); ty=innerHeight*(.46+.22*Math.sin(t*.73+1)); }
+  const k=reduce?1:.14; lx+=(tx-lx)*k; ly+=(ty-ly)*k; setLight(lx,ly); requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* timecode since you arrived */
+const tc=document.getElementById('tc'), start=performance.now();
+const pad=n=>String(n).padStart(2,'0');
+setInterval(()=>{ const ms=performance.now()-start, s=ms/1000|0;
+  tc.textContent=pad(s/3600|0)+':'+pad((s/60|0)%60)+':'+pad(s%60)+':'+pad((ms%1000)/40|0); },40);
+
+/* the disc: tap = change the night colour, hold = stop recording */
+const disc=document.getElementById('disc'), stage=document.getElementById('stage'), ringc=document.getElementById('ringc');
+const genre=document.getElementById('genre'), panel=document.getElementById('panel');
+const LEN=2*Math.PI*48; root.style.setProperty('--len',LEN); ringc.style.strokeDashoffset=LEN;
+let night=0, holdStart=0, raf=0, done=false;
+const HOLD=1300;
+function setNight(i){ night=i; root.style.setProperty('--night',NIGHTS[i][0]); root.style.setProperty('--night-text',NIGHTS[i][1]); genre.textContent=NIGHTS[i][2]; }
+function tick(){ const p=Math.min((performance.now()-holdStart)/HOLD,1); ringc.style.strokeDashoffset=LEN*(1-p);
+  if(p>=1){ finish(); return; } raf=requestAnimationFrame(tick); }
+function begin(e){ if(done) return; if(e) e.preventDefault(); holdStart=performance.now(); room.classList.add('holding'); raf=requestAnimationFrame(tick); }
+function end(){ if(done||!holdStart) return; const held=performance.now()-holdStart; holdStart=0; cancelAnimationFrame(raf);
+  room.classList.remove('holding'); ringc.style.transition='stroke-dashoffset .4s'; ringc.style.strokeDashoffset=LEN; setTimeout(()=>ringc.style.transition='',420);
+  if(held<260) setNight((night+1)%NIGHTS.length); }
+function finish(){ done=true; holdStart=0; room.classList.remove('holding'); room.classList.add('revealed'); ringc.style.strokeDashoffset=LEN;
+  panel.setAttribute('aria-hidden','false'); disc.setAttribute('tabindex','-1'); setTimeout(()=>document.getElementById('again').focus({preventScroll:true}),900); }
+disc.addEventListener('pointerdown',begin); addEventListener('pointerup',end); addEventListener('pointercancel',end);
+disc.addEventListener('keydown',e=>{ if((e.key===' '||e.key==='Enter')&&!e.repeat){ begin(e);} });
+disc.addEventListener('keyup',e=>{ if(e.key===' '||e.key==='Enter') end(); });
+disc.addEventListener('contextmenu',e=>e.preventDefault());
+document.getElementById('again').addEventListener('click',()=>{ done=false; room.classList.remove('revealed'); panel.setAttribute('aria-hidden','true'); disc.removeAttribute('tabindex'); disc.focus({preventScroll:true}); });
+</script>
+</body>
+</html>
